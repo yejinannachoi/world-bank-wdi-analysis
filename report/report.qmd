@@ -1,0 +1,41 @@
+---
+title: "World Bank's World Development Indicators Data Analysis Report"
+author: 
+  - name: "Anna Choi"
+    id: "2452634"
+  - name: "Jooha Lee"
+    id: "2433418"
+  - name: "Minjoo Kim"
+    id: "2580377"
+  - name: "Sean Jeon"
+    id: "2550044"
+date: "2025-04-28"
+format:
+  html: default
+  pdf:
+    fig-pos: "H"
+    pdf-engine: xelatex
+    mainfont: "Times New Roman"
+    include-in-header:
+      text: |
+        \addtokomafont{disposition}{\rmfamily}
+editor:
+  render-on-save: true
+---
+
+# Introduction
+
+
+# Data Description
+
+
+# Data Analysis
+
+
+# Results and Discussion
+
+
+# Conclusion
+
+
+# Further Reading
