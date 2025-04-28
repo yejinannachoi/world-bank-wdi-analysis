@@ -50,7 +50,7 @@ print(filtered_specific_df.head())
 
 ## Analysis 1: GDP-Growth Volatility vs Income Level
 
-In this section, we test whether higher-income East & Southeast Asian countries have lower volatility in their annual GDP-growth rates (1990–2023).
+In this first analysis, we ask: **Do higher-income East & Southeast Asian countries exhibit less volatile GDP-growth?**
 
 ```{python}
 #| label : gdp-income
@@ -143,6 +143,8 @@ In this group of ten East & Southeast Asian economies (1990–2023), average inc
 
 ## Analysis 2: Population Growth vs GDP Growth
 
+Next, we explore: **How has population growth influenced economic growth across emerging economies between different countries overtime?**
+
 ```{python}
 
 #| label : population-growth
@@ -206,7 +208,8 @@ For GDP growth, each country is represented with a distinct color. China's GDP g
 Overall, as countries exhibit grdual declines in population growth, it is important to note that GDP growth does not always correlate with population growth. For instance, China has experienced a decline in population growth but has maintained a relatively high GDP growth rate. Taiwan's GDP growth has been more stable compared to the other countries, despite its population growth decline. In contrast, Japan and Korea have seen both population and GDP growth decline over time. Also, China's dramatic increase population in 1960s caused a great jump in GDP growth.
 
 ## Analysis 3: Employment Rate vs GDP Growth
-<<<<<<< HEAD
+
+Finally: **How does employment rate affect GDP growth across different countries over time?**
 
 ```{python}
 import pandas as pd
@@ -312,14 +315,39 @@ The time series plots further illustrate how the relationship between employment
 
 Together, the correlation analysis and time series trends reveal that the connection between employment rates and GDP growth in Asian countries is complex and context-specific. While employment expansion can support economic growth, it is not universally predictive across all nations. Structural changes, technological innovation, global trade integration, and demographic factors often exert a stronger or overriding influence. Policymakers should therefore consider broader economic and social strategies, rather than relying solely on labor market policies, to drive sustainable long-term growth.
 
-
-=======
->>>>>>> 0559857439111820cb644e376f52a24221a3d0bc
-
 # Results and Discussion
 
+Across our three analyses of ten East & Southeast Asian economies (1990–2023), several insights emerge:
+
+1. **Volatility vs. Income Level**  
+   - We found **no statistically significant** link** between a country’s average GDP per capita and its GDP‐growth volatility (β≈–0.04, p=0.90, R²=0.002).**  
+   - **Mongolia** (≈ 5.8 pp) and **Singapore** (≈ 4.1 pp) exhibited the highest volatility, while **Vietnam** (≈ 1.5 pp) and **Japan** (≈ 2.0 pp) were the most stable.  
+   - This suggests that **structural factors**—such as commodity dependence or financial sector depth—drive stability more than average income.
+
+2. **Population Growth vs. GDP Growth**  
+   - **Moderate positive correlations** vary by country
+   - Countries with **faster demographic expansion** (Philippines, Indonesia) tend to have stronger co‐movement of population & GDP growth.  
+   - Implies that a growing labor supply can support higher output — but the effect is **not uniform** across all economies.
+
+3. **Employment-to-Population Ratio vs. GDP Growth**  
+   - **Small positive correlations** across most countries (r≈0.10–0.25).  
+   - Indicates that **greater labor‐market participation** generally accompanies stronger growth, though the relationship is **modest**.  
+   - Highlights that **productivity, capital investment, and external shocks** also play major roles beyond employment levels.
+
+> **Synthesis:**  
+> - **Income and volatility** are largely **uncoupled**, so raising income alone won’t guarantee stability.  
+> - **Demographic and labor-market dynamics** matter, but they explain only **part** of growth performance.  
+> - **Policy implication:** To promote both growth and stability, countries should pursue **economic diversification**, **invest in human capital**, and **strengthen macroprudential frameworks**, rather than relying solely on income growth or workforce expansion.
 
 # Conclusion
 
+
+This study has shown that:
+
+- **Higher income** does not necessarily translate into **lower GDP-growth volatility**.  
+- **Population growth** can be a **growth driver** in rapidly expanding economies, but its impact varies across contexts.  
+- **Employment ratios** are positively linked to growth, yet **other factors**—such as productivity improvements and external conditions—are equally critical.
+
+**Overall**, sustainable development in Asia requires a **holistic approach**: combining income growth with structural reforms (diversification, human-capital investment, macroprudential policy) to achieve both **robust growth** and **economic stability**.
 
 # Further Reading
