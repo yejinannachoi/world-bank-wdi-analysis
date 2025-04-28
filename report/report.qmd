@@ -52,8 +52,96 @@ print(filtered_specific_df.head())
 
 In this section, we test whether higher-income East & Southeast Asian countries have lower volatility in their annual GDP-growth rates (1990–2023).
 
-## population growth vs gdp growth
+```{python}
+#| label : gdp-income
+#| fig-cap : "GDP Growth Volatility vs. Income Level"
+#| echo : false
 
+import pandas as pd, seaborn as sns, matplotlib.pyplot as plt, statsmodels.api as sm
+import warnings
+warnings.filterwarnings("ignore")
+
+metrics = pd.read_csv('volatility_income_metrics.csv')
+
+# Scatter + regression
+sns.set(style="whitegrid")
+fig, ax = plt.subplots(figsize=(8,6))
+sns.regplot(
+    x='avg_log_gdp',
+    y='volatility_gdp_growth',
+    data=metrics,
+    ci=95,
+    scatter_kws={'s':80},
+    ax=ax
+)
+ax.set(
+    title='GDP Growth Volatility vs. Income Level (1990–2023)',
+    xlabel='Average log(GDP per capita)',
+    ylabel='Std. Dev. of Annual GDP Growth (%)'
+)
+
+# Annotate β, p-value, R²
+X = sm.add_constant(metrics['avg_log_gdp'])
+y = metrics['volatility_gdp_growth']
+model = sm.OLS(y, X).fit()
+beta, pval, r2 = model.params[1], model.pvalues[1], model.rsquared
+ax.text(0.05, 0.95,
+        f'β = {beta:.2f}\np = {pval:.3f}\n$R^2$ = {r2:.2f}',
+        transform=ax.transAxes, va='top', bbox=dict(boxstyle="round", fc="w"))
+plt.tight_layout()
+```
+
+```{python}
+#| label : gdp-volatility-ols
+#| fig-cap : "OLS Regression of Volatility and Income"
+#| echo : false
+
+X = sm.add_constant(metrics['avg_log_gdp'])
+y = metrics['volatility_gdp_growth']
+model = sm.OLS(y, X).fit()
+print(model.summary())
+```
+
+```{python}
+#| label : gdp-volatility
+#| fig-cap : "GDP Growth Volatility by Country"
+#| echo : false
+
+plt.figure()
+metrics_sorted = metrics.sort_values('volatility_gdp_growth', ascending=False)
+sns.barplot(
+    x='volatility_gdp_growth', y='country',
+    data=metrics_sorted, palette='mako'
+)
+plt.title('GDP Growth Volatility by Country')
+plt.xlabel('Std. Dev. of GDP Growth (%)')
+plt.ylabel('')
+plt.tight_layout()
+plt.show()
+```
+
+1. Scatter Plot & Regression Line
+- The fitted line has a slight negative slope (β ≈ –0.044), suggesting that countries with higher average log GDP per capita tend to have marginally lower volatility in GDP growth.
+- However, the shaded 95 % confidence band is very wide and nearly flat, indicating substantial uncertainty about that relationship.
+
+2. OLS Regression Table
+- Coefficient on avg_log_gdp: –0.044 (for each one-unit increase in log GDP per capita, volatility falls by about 0.044 pp)
+- p-value: 0.901 — far above conventional significance levels (0.05), so we cannot reject the null hypothesis of zero slope.
+- R²: 0.002 — only 0.2 % of the cross-country variation in GDP-growth volatility is explained by average income.
+- Conclusion: There is no statistically significant evidence in this sample that richer East & Southeast Asian countries experience more stable growth.
+
+3. Bar Chart of Volatility by Country
+- Most volatile: Mongolia (≈ 5.8 pp), followed by Singapore (≈ 4.1 pp) and Thailand (≈ 4.0 pp).
+- Least volatile: Viet Nam (≈ 1.5 pp) and Japan (≈ 2.0 pp).
+These country-specific differences likely reflect diverse economic structures:
+  - Mongolia’s heavy reliance on mining exposes it to commodity price swings.
+  - Viet Nam and Japan have more diversified, stable economies and macro-prudential frameworks.
+
+Key Takeaway:
+
+In this group of ten East & Southeast Asian economies (1990–2023), average income level is not a good predictor of growth volatility. Instead, country-specific factors—such as resource dependence, economic diversification, and policy frameworks—appear to drive differences in stability.
+
+## Analysis 2: Population Growth vs GDP Growth
 
 ```{python}
 
@@ -117,7 +205,7 @@ For GDP growth, each country is represented with a distinct color. China's GDP g
 
 Overall, as countries exhibit grdual declines in population growth, it is important to note that GDP growth does not always correlate with population growth. For instance, China has experienced a decline in population growth but has maintained a relatively high GDP growth rate. Taiwan's GDP growth has been more stable compared to the other countries, despite its population growth decline. In contrast, Japan and Korea have seen both population and GDP growth decline over time. Also, China's dramatic increase population in 1960s caused a great jump in GDP growth.
 
-## employment rate vs gdp growth
+## Analysis 3: Employment Rate vs GDP Growth
 <<<<<<< HEAD
 
 ```{python}
