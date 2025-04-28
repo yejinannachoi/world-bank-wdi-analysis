@@ -21,6 +21,8 @@ format:
         \addtokomafont{disposition}{\rmfamily}
 editor:
   render-on-save: true
+execute:
+  echo : false
 ---
 
 # Introduction
@@ -30,6 +32,197 @@ editor:
 
 
 # Data Analysis
+
+```{python}
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import warnings
+
+asian_countries = pd.read_csv("/Users/joohalee/Desktop/world-bank-wdi-analysis/data/asian_countries.csv")
+asian_countries
+
+countries_of_interest = ["China", "Korea, Rep.", "Japan", "India"]
+filtered_specific_df = asian_countries[asian_countries['country'].isin(countries_of_interest)]
+print(filtered_specific_df.head())
+```
+
+## Analysis 1: GDP-Growth Volatility vs Income Level
+
+In this section, we test whether higher-income East & Southeast Asian countries have lower volatility in their annual GDP-growth rates (1990–2023).
+
+## population growth vs gdp growth
+
+
+```{python}
+
+#| label : population-growth
+#| fig-cap : "Population Growth by Country"
+#| echo : false
+
+country_colors = {
+    "China": "red",
+    "Korea, Rep.": "blue",
+    "Japan": "green",
+    "India": "orange"
+}
+
+plt.figure(figsize=(20, 10))
+
+plt.subplot(2, 1, 1)  
+for country, color in country_colors.items():
+    country_data = filtered_specific_df[filtered_specific_df['country'] == country]
+    plt.plot(country_data['year'], country_data['population_growth'], label=country, color=color, linestyle='-', marker='o')
+
+# Plot the data for population growth
+plt.title('Population Growth Over Time for China, Korea, Japan, Taiwan, and India', fontsize=16)
+plt.xlabel('Year', fontsize=12)
+plt.ylabel('Population Growth (%)', fontsize=12)
+plt.legend(title="Countries", bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.xticks(rotation=45)
+```
+
+```{python}
+#| label : gdp-growth
+#| fig-cap : "GDP Growth by Country"
+#| echo : false
+
+
+plt.figure(figsize=(20, 10))
+
+plt.subplot(2, 1, 2)  
+for country, color in country_colors.items():
+    country_data = filtered_specific_df[filtered_specific_df['country'] == country]
+    plt.plot(country_data['year'], country_data['gdp_growth'], label=country, color=color, linestyle='--', marker='x')
+
+# Plot the data for GDP growth
+plt.title('GDP Growth Over Time for China, Korea, Japan, Taiwan, and India', fontsize=16)
+plt.xlabel('Year', fontsize=12)
+plt.ylabel('GDP Growth (%)', fontsize=12)
+plt.legend(title="Countries", bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.xticks(rotation=45)
+
+plt.tight_layout()
+plt.show()
+```
+
+Population Growth Over Time:
+
+The population growth trends for each country are now color-coded, making it easier to compare them. The red line represents China, which shows a gradual decline in population growth. India (orange) have relatively higher population growth, though with a decline over time. Japan (green) and Korea, Rep. (blue) show a significant decrease in population growth, particularly in recent decades.
+
+GDP Growth Over Time:
+
+For GDP growth, each country is represented with a distinct color. China's GDP growth (red) shows more volatility, with a noticeable spike in the early 1990s. India (orange) exhibit positive growth in several periods, while Japan (green) and Korea (blue) show more fluctuations with occasional negative growth.
+
+Overall, as countries exhibit grdual declines in population growth, it is important to note that GDP growth does not always correlate with population growth. For instance, China has experienced a decline in population growth but has maintained a relatively high GDP growth rate. Taiwan's GDP growth has been more stable compared to the other countries, despite its population growth decline. In contrast, Japan and Korea have seen both population and GDP growth decline over time. Also, China's dramatic increase population in 1960s caused a great jump in GDP growth.
+
+## employment rate vs gdp growth
+
+```{python}
+import pandas as pd
+import matplotlib.pyplot as plt
+import statsmodels.api as sm
+
+# Load dataset
+df = pd.read_csv('/Users/seanjeon/Downloads asian_countries.csv')
+
+# List of selected countries
+selected_countries = [
+    'China', 'Japan', 'Korea, Rep.', 'Singapore', 'Thailand', 'Viet Nam'
+]
+
+# Filter
+df_selected = df[df['country'].isin(selected_countries)]
+df_clean = df_selected.dropna(subset=['employment_population_ratio', 'gdp_growth'])
+
+
+# Load dataset
+df = pd.read_csv('/Users/seanjeon/Downloads/asian_countries.csv')
+
+# List of selected countries
+selected_countries = [
+    'China', 'Japan', 'Korea, Rep.', 'Mongolia',
+    'Indonesia', 'Malaysia', 'Philippines', 'Singapore', 'Thailand', 'Viet Nam'
+]
+
+# Filter
+df_selected = df[df['country'].isin(selected_countries)]
+df_clean = df_selected.dropna(subset=['employment_population_ratio', 'gdp_growth'])
+
+# Calculate correlation for each country
+correlations = {}
+for country in df_clean['country'].unique():
+    temp = df_clean[df_clean['country'] == country]
+    corr = temp['employment_population_ratio'].corr(temp['gdp_growth'])
+    correlations[country] = corr
+
+# Create DataFrame for easy plotting
+corr_df = pd.DataFrame(list(correlations.items()), columns=['Country', 'Correlation'])
+
+# Sort by correlation (optional, makes it prettier)
+corr_df = corr_df.sort_values('Correlation', ascending=False)
+
+# Bar plot
+plt.figure(figsize=(10,6))
+plt.bar(corr_df['Country'], corr_df['Correlation'], color='skyblue')
+plt.axhline(0, color='black', linewidth=0.8)  # Horizontal line at 0
+plt.title('Correlation between Employment Rate and GDP Growth by Country')
+plt.ylabel('Correlation Coefficient')
+plt.xticks(rotation=45, ha='right')
+plt.grid(axis='y')
+plt.tight_layout()
+plt.show()
+```
+
+```{python}
+# List of selected countries
+selected_countries = [
+    'China', 'Japan', 'Korea, Rep.', 'Singapore', 'Thailand', 'Viet Nam'
+]
+
+# Filter
+df_selected = df[df['country'].isin(selected_countries)]
+df_clean = df_selected.dropna(subset=['employment_population_ratio', 'gdp_growth'])
+
+# Create 2x5 subplots
+fig, axes = plt.subplots(2, 3, figsize=(20, 8))  # Wide and short figure
+axes = axes.flatten()  # Make it easier to loop
+
+# Plot each country
+for i, country in enumerate(selected_countries):
+    temp = df_clean[df_clean['country'] == country]
+    
+    ax1 = axes[i]
+    ax2 = ax1.twinx()  # Create twin y-axis
+
+    ax1.plot(temp['year'], temp['employment_population_ratio'], color='tab:blue')
+    ax2.plot(temp['year'], temp['gdp_growth'], color='tab:red', linestyle='--')
+
+    ax1.set_title(country, fontsize=10)
+    ax1.set_xlabel('Year', fontsize=8)
+    ax1.set_ylabel('Employment Rate (%)', color='tab:blue', fontsize=8)
+    ax2.set_ylabel('GDP Growth (%)', color='tab:red', fontsize=8)
+    
+    ax1.tick_params(axis='both', labelsize=7)
+    ax2.tick_params(axis='y', labelsize=7)
+
+# Adjust layout
+plt.tight_layout()
+plt.show()
+```
+
+
+Correlation Analysis:
+
+The correlation analysis shows that the relationship between employment rates and GDP growth varies significantly across the selected Asian countries. Countries like China, the Philippines, Viet Nam, and Thailand demonstrate moderately strong positive correlations, suggesting that increases in employment rates are generally associated with higher economic growth. In contrast, countries such as Singapore, Malaysia, and Korea, Rep. display weak or even negative correlations, indicating that employment expansion does not necessarily lead to GDP growth in these cases. This variation highlights that while employment can contribute to growth, it is not the sole driver, and other factors like productivity, industrial structure, and external trade may have a larger influence in some countries.
+
+Time Series Trend Analysis:
+
+The time series plots further illustrate how the relationship between employment rates and GDP growth evolves over time within each country. In China, for example, GDP growth remained strong despite a steady decline in employment rates, suggesting that factors like industrial upgrading and capital investment played more critical roles. In contrast, countries like Viet Nam and Thailand show periods where employment and GDP growth move somewhat together, hinting at a closer link between labor market dynamics and economic performance. However, fluctuations in GDP growth for countries like Singapore and Japan appear largely disconnected from employment trends, indicating the influence of external shocks, demographic changes, or sectoral shifts beyond employment factors alone.
+
+Together, the correlation analysis and time series trends reveal that the connection between employment rates and GDP growth in Asian countries is complex and context-specific. While employment expansion can support economic growth, it is not universally predictive across all nations. Structural changes, technological innovation, global trade integration, and demographic factors often exert a stronger or overriding influence. Policymakers should therefore consider broader economic and social strategies, rather than relying solely on labor market policies, to drive sustainable long-term growth.
+
 
 
 # Results and Discussion
