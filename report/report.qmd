@@ -21,6 +21,8 @@ format:
         \addtokomafont{disposition}{\rmfamily}
 editor:
   render-on-save: true
+execute:
+  echo : false
 ---
 
 # Introduction
@@ -31,6 +33,89 @@ editor:
 
 # Data Analysis
 
+```{python}
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+import warnings
+
+asian_countries = pd.read_csv("/Users/joohalee/Desktop/world-bank-wdi-analysis/data/asian_countries.csv")
+asian_countries
+
+countries_of_interest = ["China", "Korea, Rep.", "Japan", "India"]
+filtered_specific_df = asian_countries[asian_countries['country'].isin(countries_of_interest)]
+print(filtered_specific_df.head())
+```
+
+## volatility vs income
+
+## population growth vs gdp growth
+
+
+```{python}
+
+#| label : population-growth
+#| fig-cap : "Population Growth by Country"
+#| echo : false
+
+country_colors = {
+    "China": "red",
+    "Korea, Rep.": "blue",
+    "Japan": "green",
+    "India": "orange"
+}
+
+plt.figure(figsize=(20, 10))
+
+plt.subplot(2, 1, 1)  
+for country, color in country_colors.items():
+    country_data = filtered_specific_df[filtered_specific_df['country'] == country]
+    plt.plot(country_data['year'], country_data['population_growth'], label=country, color=color, linestyle='-', marker='o')
+
+# Plot the data for population growth
+plt.title('Population Growth Over Time for China, Korea, Japan, Taiwan, and India', fontsize=16)
+plt.xlabel('Year', fontsize=12)
+plt.ylabel('Population Growth (%)', fontsize=12)
+plt.legend(title="Countries", bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.xticks(rotation=45)
+```
+
+```{python}
+#| label : gdp-growth
+#| fig-cap : "GDP Growth by Country"
+#| echo : false
+
+
+plt.figure(figsize=(20, 10))
+
+plt.subplot(2, 1, 2)  
+for country, color in country_colors.items():
+    country_data = filtered_specific_df[filtered_specific_df['country'] == country]
+    plt.plot(country_data['year'], country_data['gdp_growth'], label=country, color=color, linestyle='--', marker='x')
+
+# Plot the data for GDP growth
+plt.title('GDP Growth Over Time for China, Korea, Japan, Taiwan, and India', fontsize=16)
+plt.xlabel('Year', fontsize=12)
+plt.ylabel('GDP Growth (%)', fontsize=12)
+plt.legend(title="Countries", bbox_to_anchor=(1.05, 1), loc='upper left')
+plt.xticks(rotation=45)
+
+plt.tight_layout()
+plt.show()
+```
+
+Population Growth Over Time:
+
+The population growth trends for each country are now color-coded, making it easier to compare them. The red line represents China, which shows a gradual decline in population growth. India (orange) have relatively higher population growth, though with a decline over time. Japan (green) and Korea, Rep. (blue) show a significant decrease in population growth, particularly in recent decades.
+
+GDP Growth Over Time:
+
+For GDP growth, each country is represented with a distinct color. China's GDP growth (red) shows more volatility, with a noticeable spike in the early 1990s. India (orange) exhibit positive growth in several periods, while Japan (green) and Korea (blue) show more fluctuations with occasional negative growth.
+
+Overall, as countries exhibit grdual declines in population growth, it is important to note that GDP growth does not always correlate with population growth. For instance, China has experienced a decline in population growth but has maintained a relatively high GDP growth rate. Taiwan's GDP growth has been more stable compared to the other countries, despite its population growth decline. In contrast, Japan and Korea have seen both population and GDP growth decline over time. Also, China's dramatic increase population in 1960s caused a great jump in GDP growth.
+
+## employment rate vs gdp growth
 
 # Results and Discussion
 
