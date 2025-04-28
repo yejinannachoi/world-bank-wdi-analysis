@@ -118,6 +118,7 @@ For GDP growth, each country is represented with a distinct color. China's GDP g
 Overall, as countries exhibit grdual declines in population growth, it is important to note that GDP growth does not always correlate with population growth. For instance, China has experienced a decline in population growth but has maintained a relatively high GDP growth rate. Taiwan's GDP growth has been more stable compared to the other countries, despite its population growth decline. In contrast, Japan and Korea have seen both population and GDP growth decline over time. Also, China's dramatic increase population in 1960s caused a great jump in GDP growth.
 
 ## employment rate vs gdp growth
+<<<<<<< HEAD
 
 ```{python}
 import pandas as pd
@@ -224,6 +225,8 @@ The time series plots further illustrate how the relationship between employment
 Together, the correlation analysis and time series trends reveal that the connection between employment rates and GDP growth in Asian countries is complex and context-specific. While employment expansion can support economic growth, it is not universally predictive across all nations. Structural changes, technological innovation, global trade integration, and demographic factors often exert a stronger or overriding influence. Policymakers should therefore consider broader economic and social strategies, rather than relying solely on labor market policies, to drive sustainable long-term growth.
 
 
+=======
+>>>>>>> 0559857439111820cb644e376f52a24221a3d0bc
 
 # Results and Discussion
 
