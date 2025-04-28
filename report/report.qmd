@@ -48,7 +48,9 @@ filtered_specific_df = asian_countries[asian_countries['country'].isin(countries
 print(filtered_specific_df.head())
 ```
 
-## volatility vs income
+## Analysis 1: GDP-Growth Volatility vs Income Level
+
+In this section, we test whether higher-income East & Southeast Asian countries have lower volatility in their annual GDP-growth rates (1990–2023).
 
 ## population growth vs gdp growth
 
