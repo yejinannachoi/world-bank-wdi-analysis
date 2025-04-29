@@ -71,8 +71,8 @@ The repository is organized into the following directories and files:
 ---
 
 ## **Key Insights**
-- Primary enrollment rates are consistently high, reflecting global prioritization of foundational education.
-- Significant disparities exist in tertiary education, particularly in regions like Sub-Saharan Africa and South Asia.
-- Positive correlations between enrollment levels suggest that strengthening access at one level improves outcomes at others.
+- **Income and Volatility**: Higher income does not guarantee more stable economic growth; structural factors matter more.
+- **Population Growth**: Population growth can boost GDP growth but varies significantly across contexts.
+- **Employment and GDP Growth**: While employment expansion can support GDP growth, productivity and external conditions play critical roles.
 
 ---
