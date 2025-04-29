@@ -61,7 +61,7 @@ import pandas as pd, seaborn as sns, matplotlib.pyplot as plt, statsmodels.api a
 import warnings
 warnings.filterwarnings("ignore")
 
-metrics = pd.read_csv('volatility_income_metrics.csv')
+metrics = pd.read_csv('/Users/joohalee/Desktop/world-bank-wdi-analysis/data/volatility_income_metrics.csv')
 
 # Scatter + regression
 sns.set(style="whitegrid")
@@ -217,7 +217,7 @@ import matplotlib.pyplot as plt
 import statsmodels.api as sm
 
 # Load dataset
-df = pd.read_csv('/Users/seanjeon/Downloads asian_countries.csv')
+df = pd.read_csv('/Users/joohalee/Desktop/world-bank-wdi-analysis/data/asian_countries.csv')
 
 # List of selected countries
 selected_countries = [
@@ -230,7 +230,7 @@ df_clean = df_selected.dropna(subset=['employment_population_ratio', 'gdp_growth
 
 
 # Load dataset
-df = pd.read_csv('/Users/seanjeon/Downloads/asian_countries.csv')
+df = pd.read_csv('/Users/joohalee/Desktop/world-bank-wdi-analysis/data/asian_countries.csv')
 
 # List of selected countries
 selected_countries = [
