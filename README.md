@@ -26,7 +26,7 @@ Ensure you have the following software installed:
 ### **Required Libraries**
 Install the necessary libraries before running the code:
 ```bash
-pip install pandas matplotlib seaborn
+pip install pandas matplotlib seaborn numpy statsmodels 
 ```
 
 ---
@@ -42,7 +42,7 @@ pip install pandas matplotlib seaborn
 
 2. **Prepare the Dataset**
    - Ensure `asian_countries.csv` is in the project root directory.
-   - If missing, you can regenerate the dataset using the `wbdata` Python library and the World Bank Open Data source.
+
 
 3. **Run the Analysis**
    - Open the `report.qmd` file in your preferred Quarto-compatible editor or IDE.
