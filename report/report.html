@@ -85,21 +85,994 @@ ul.task-list li input[type="checkbox"] {
 
 <section id="introduction" class="level1">
 <h1>Introduction</h1>
+<p>Economic growth and stability are closely tied to many core aspects of life, such as education, health, and overall well-being. Over the past few decades, Asia has undergone remarkable economic changes, but the pace and patterns of growth have varied widely across regions and countries. In this report, we take a closer look at Asian economies from 1960 to 2024 to answer three major research questions:</p>
+<ol type="1">
+<li><p>Do higher-income Asian countries exhibit less volatile GDP growth between 1990 and 2023?</p></li>
+<li><p>How has population growth influenced economic growth across emerging economies over time?</p></li>
+<li><p>How does the employment rate affect GDP growth across different countries over time?</p></li>
+</ol>
+<p>Using statistical models and visualizations, we explore how GDP growth relates to income levels, population growth, and employment rates. Our goal is to derive insights that can help inform strategies for achieving more sustainable and inclusive economic development.</p>
+<p>Our analysis reveals that economic performance across Asian countries cannot be explained by one single factor. It results from a combination of income, demographics, and structural characteristics. First, we find no statistically significant link between income level and GDP growth volatility. Second, while countries with higher population growth tend to experience stronger GDP growth, this relationship varies across contexts. Third, employment-to-population ratios show a modest positive correlation with GDP growth, though in some countries, high employment does not translate to higher income levels.</p>
 </section>
 <section id="data-description" class="level1">
 <h1>Data Description</h1>
+<section id="dataset-overview" class="level2">
+<h2 class="anchored" data-anchor-id="dataset-overview">Dataset Overview</h2>
+<p><code>asian_countries.csv</code> contains 3,315 rows and 6 columns and was compiled from World Bank Open Data using the wbdata Python library. It includes annual economic and demographic indicators for 51 Asian and Middle Eastern countries from 1960 to 2024.</p>
+<p>Specifically, the dataset incorporates GDP per capita (constant 2015 US$), employment-to-population ratio (ages 15+), GDP growth (annual %), and population growth (annual %), corresponding to World Bank indicator codes NY.GDP.PCAP.KD, SL.EMP.TOTL.SP.ZS, NY.GDP.MKTP.KD.ZG, and SP.POP.GROW, respectively.</p>
+<p>These indicators were initially downloaded as separate datasets and then merged using country and date as keys.</p>
+<div id="tbl-summary" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Summary of Key Variables
+</figcaption>
+<div aria-describedby="tbl-summary-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 22%">
+<col style="width: 34%">
+<col style="width: 6%">
+<col style="width: 12%">
+<col style="width: 11%">
+<col style="width: 11%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Variable</th>
+<th style="text-align: left;">Description</th>
+<th style="text-align: left;">Type</th>
+<th style="text-align: left;">Non-Null Values</th>
+<th style="text-align: left;">Unique Values</th>
+<th style="text-align: left;">Sample Value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><code>country</code></td>
+<td style="text-align: left;">Country or region name</td>
+<td style="text-align: left;">object</td>
+<td style="text-align: left;">3,315</td>
+<td style="text-align: left;">51</td>
+<td style="text-align: left;">Afghanistan</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>year</code></td>
+<td style="text-align: left;">Calendar year</td>
+<td style="text-align: left;">int64</td>
+<td style="text-align: left;">3,315</td>
+<td style="text-align: left;">65</td>
+<td style="text-align: left;">2024</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>gdp_per_capita</code></td>
+<td style="text-align: left;">GDP per capita (constant 2015 US$)</td>
+<td style="text-align: left;">float64</td>
+<td style="text-align: left;">2,627</td>
+<td style="text-align: left;">2,627</td>
+<td style="text-align: left;">1159.67</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>employment_population_ratio</code></td>
+<td style="text-align: left;">Employment to population ratio (ages 15+, %)</td>
+<td style="text-align: left;">float64</td>
+<td style="text-align: left;">1,731</td>
+<td style="text-align: left;">1,689</td>
+<td style="text-align: left;">32.51</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><code>gdp_growth</code></td>
+<td style="text-align: left;">Annual GDP growth (%)</td>
+<td style="text-align: left;">float64</td>
+<td style="text-align: left;">2,572</td>
+<td style="text-align: left;">2,570</td>
+<td style="text-align: left;">6.60</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><code>population_growth</code></td>
+<td style="text-align: left;">Annual population growth (%)</td>
+<td style="text-align: left;">float64</td>
+<td style="text-align: left;">3,183</td>
+<td style="text-align: left;">3,183</td>
+<td style="text-align: left;">2.74</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+</section>
+<section id="data-merging-process" class="level2">
+<h2 class="anchored" data-anchor-id="data-merging-process">Data Merging Process</h2>
+<p>The following steps were followed to build the dataset:</p>
+<ol type="1">
+<li>Download each indicator separately using the <code>wbdata</code> library.</li>
+<li>Save each indicator as an individual table in a SQLite database (<code>wdi_data.db</code>).</li>
+<li>Merge the tables using SQL, joining on country and year fields.</li>
+<li>Filter the merged data to include only a specified list of Asian and Middle Eastern countries.</li>
+<li>Export the final merged data as <code>asian_countries.csv</code>.</li>
+</ol>
+</section>
+<section id="data-cleaning-and-preprocessing" class="level2">
+<h2 class="anchored" data-anchor-id="data-cleaning-and-preprocessing">Data Cleaning and Preprocessing</h2>
+<p><strong>Country Selection</strong></p>
+<p>Only countries in Asia and the Middle East/North Africa were retained based on the United Nations geoscheme.</p>
+<p><strong>Merging Indicators</strong></p>
+<p>Four datasets were merged using <code>country</code> and <code>date</code> as a composite key.</p>
+<p><strong>Date Handling</strong></p>
+<p>Date fields were converted into calendar years by extracting the year component.</p>
+</section>
+<section id="summary-of-key-statistics-by-country" class="level2">
+<h2 class="anchored" data-anchor-id="summary-of-key-statistics-by-country">Summary of Key Statistics by Country</h2>
+<p>The following table summarizes indicators for each country included in the analysis. It reports the number of available years of data, average GDP per capita, minimum and maximum GDP per capita, average employment-to-population ratio, average GDP growth rate, minimum and maximum GDP growth, and average population growth.</p>
+<div id="tbl-summary-statistics" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-summary-statistics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: Summary Statistics
+</figcaption>
+<div aria-describedby="tbl-summary-statistics-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 13%">
+<col style="width: 8%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 12%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 9%">
+<col style="width: 12%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Country</th>
+<th style="text-align: right;">Years of Data</th>
+<th style="text-align: right;">Avg GDP per Capita</th>
+<th style="text-align: right;">Min GDP per Capita</th>
+<th style="text-align: right;">Max GDP per Capita</th>
+<th style="text-align: right;">Avg Employment Ratio (%)</th>
+<th style="text-align: right;">Avg GDP Growth (%)</th>
+<th style="text-align: right;">Min GDP Growth (%)</th>
+<th style="text-align: right;">Max GDP Growth (%)</th>
+<th style="text-align: right;">Avg Population Growth (%)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Afghanistan</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">456.12</td>
+<td style="text-align: right;">277.12</td>
+<td style="text-align: right;">580.60</td>
+<td style="text-align: right;">41.50</td>
+<td style="text-align: right;">4.60</td>
+<td style="text-align: right;">-20.74</td>
+<td style="text-align: right;">28.60</td>
+<td style="text-align: right;">2.42</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Armenia</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">2507.86</td>
+<td style="text-align: right;">792.57</td>
+<td style="text-align: right;">5151.01</td>
+<td style="text-align: right;">54.12</td>
+<td style="text-align: right;">3.66</td>
+<td style="text-align: right;">-41.80</td>
+<td style="text-align: right;">14.00</td>
+<td style="text-align: right;">0.75</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Azerbaijan</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">3539.17</td>
+<td style="text-align: right;">1102.50</td>
+<td style="text-align: right;">5651.35</td>
+<td style="text-align: right;">63.77</td>
+<td style="text-align: right;">3.92</td>
+<td style="text-align: right;">-23.10</td>
+<td style="text-align: right;">34.50</td>
+<td style="text-align: right;">1.52</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Bahrain</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">22079.58</td>
+<td style="text-align: right;">17091.29</td>
+<td style="text-align: right;">25407.97</td>
+<td style="text-align: right;">68.26</td>
+<td style="text-align: right;">4.62</td>
+<td style="text-align: right;">-8.83</td>
+<td style="text-align: right;">30.48</td>
+<td style="text-align: right;">3.58</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Bangladesh</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">700.52</td>
+<td style="text-align: right;">373.26</td>
+<td style="text-align: right;">1885.38</td>
+<td style="text-align: right;">56.09</td>
+<td style="text-align: right;">4.41</td>
+<td style="text-align: right;">-13.97</td>
+<td style="text-align: right;">10.95</td>
+<td style="text-align: right;">1.90</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Bhutan</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">1417.68</td>
+<td style="text-align: right;">370.06</td>
+<td style="text-align: right;">3467.39</td>
+<td style="text-align: right;">65.96</td>
+<td style="text-align: right;">6.13</td>
+<td style="text-align: right;">-10.22</td>
+<td style="text-align: right;">29.05</td>
+<td style="text-align: right;">1.99</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Brunei Darussalam</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">44527.47</td>
+<td style="text-align: right;">28549.18</td>
+<td style="text-align: right;">96517.13</td>
+<td style="text-align: right;">62.57</td>
+<td style="text-align: right;">0.79</td>
+<td style="text-align: right;">-22.38</td>
+<td style="text-align: right;">24.34</td>
+<td style="text-align: right;">2.62</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cambodia</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">1007.80</td>
+<td style="text-align: right;">496.77</td>
+<td style="text-align: right;">2083.59</td>
+<td style="text-align: right;">80.44</td>
+<td style="text-align: right;">4.56</td>
+<td style="text-align: right;">-34.81</td>
+<td style="text-align: right;">21.53</td>
+<td style="text-align: right;">1.84</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">China</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">2880.00</td>
+<td style="text-align: right;">163.91</td>
+<td style="text-align: right;">12175.20</td>
+<td style="text-align: right;">68.93</td>
+<td style="text-align: right;">7.95</td>
+<td style="text-align: right;">-27.27</td>
+<td style="text-align: right;">19.30</td>
+<td style="text-align: right;">1.19</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Cyprus</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">20082.21</td>
+<td style="text-align: right;">6173.29</td>
+<td style="text-align: right;">32341.30</td>
+<td style="text-align: right;">59.20</td>
+<td style="text-align: right;">4.94</td>
+<td style="text-align: right;">-6.59</td>
+<td style="text-align: right;">20.27</td>
+<td style="text-align: right;">1.32</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Egypt, Arab Rep.</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">2096.08</td>
+<td style="text-align: right;">754.67</td>
+<td style="text-align: right;">4111.25</td>
+<td style="text-align: right;">41.52</td>
+<td style="text-align: right;">5.15</td>
+<td style="text-align: right;">-1.61</td>
+<td style="text-align: right;">13.28</td>
+<td style="text-align: right;">2.30</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Georgia</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">2986.69</td>
+<td style="text-align: right;">966.42</td>
+<td style="text-align: right;">6180.62</td>
+<td style="text-align: right;">56.79</td>
+<td style="text-align: right;">2.93</td>
+<td style="text-align: right;">-44.90</td>
+<td style="text-align: right;">12.58</td>
+<td style="text-align: right;">0.03</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Hong Kong SAR, China</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">23047.31</td>
+<td style="text-align: right;">3956.03</td>
+<td style="text-align: right;">45280.50</td>
+<td style="text-align: right;">57.96</td>
+<td style="text-align: right;">5.52</td>
+<td style="text-align: right;">-6.54</td>
+<td style="text-align: right;">16.16</td>
+<td style="text-align: right;">1.40</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">India</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">793.06</td>
+<td style="text-align: right;">312.78</td>
+<td style="text-align: right;">2236.31</td>
+<td style="text-align: right;">52.17</td>
+<td style="text-align: right;">5.19</td>
+<td style="text-align: right;">-5.78</td>
+<td style="text-align: right;">9.69</td>
+<td style="text-align: right;">1.89</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Indonesia</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">1774.15</td>
+<td style="text-align: right;">568.83</td>
+<td style="text-align: right;">4192.62</td>
+<td style="text-align: right;">63.21</td>
+<td style="text-align: right;">5.11</td>
+<td style="text-align: right;">-13.13</td>
+<td style="text-align: right;">10.92</td>
+<td style="text-align: right;">1.84</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Iran, Islamic Rep.</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">4435.95</td>
+<td style="text-align: right;">2345.11</td>
+<td style="text-align: right;">7422.13</td>
+<td style="text-align: right;">38.68</td>
+<td style="text-align: right;">4.06</td>
+<td style="text-align: right;">-21.60</td>
+<td style="text-align: right;">23.17</td>
+<td style="text-align: right;">2.29</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Iraq</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">2724.31</td>
+<td style="text-align: right;">997.93</td>
+<td style="text-align: right;">4932.93</td>
+<td style="text-align: right;">37.61</td>
+<td style="text-align: right;">6.95</td>
+<td style="text-align: right;">-64.05</td>
+<td style="text-align: right;">57.82</td>
+<td style="text-align: right;">2.95</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Israel</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">24383.00</td>
+<td style="text-align: right;">8756.37</td>
+<td style="text-align: right;">42852.58</td>
+<td style="text-align: right;">57.60</td>
+<td style="text-align: right;">5.13</td>
+<td style="text-align: right;">-1.46</td>
+<td style="text-align: right;">16.24</td>
+<td style="text-align: right;">2.43</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Japan</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">25035.06</td>
+<td style="text-align: right;">6388.88</td>
+<td style="text-align: right;">36990.33</td>
+<td style="text-align: right;">59.31</td>
+<td style="text-align: right;">3.37</td>
+<td style="text-align: right;">-5.69</td>
+<td style="text-align: right;">12.88</td>
+<td style="text-align: right;">0.46</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Jordan</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">3906.80</td>
+<td style="text-align: right;">2926.45</td>
+<td style="text-align: right;">4939.76</td>
+<td style="text-align: right;">32.87</td>
+<td style="text-align: right;">4.62</td>
+<td style="text-align: right;">-10.73</td>
+<td style="text-align: right;">20.80</td>
+<td style="text-align: right;">4.12</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Kazakhstan</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">7369.50</td>
+<td style="text-align: right;">3498.51</td>
+<td style="text-align: right;">11453.40</td>
+<td style="text-align: right;">66.23</td>
+<td style="text-align: right;">2.95</td>
+<td style="text-align: right;">-12.60</td>
+<td style="text-align: right;">13.50</td>
+<td style="text-align: right;">1.22</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Korea, Dem. People’s Rep.</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">NaN</td>
+<td style="text-align: right;">NaN</td>
+<td style="text-align: right;">NaN</td>
+<td style="text-align: right;">79.60</td>
+<td style="text-align: right;">NaN</td>
+<td style="text-align: right;">NaN</td>
+<td style="text-align: right;">NaN</td>
+<td style="text-align: right;">1.29</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Korea, Rep.</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">13355.98</td>
+<td style="text-align: right;">1027.65</td>
+<td style="text-align: right;">34121.02</td>
+<td style="text-align: right;">59.59</td>
+<td style="text-align: right;">7.02</td>
+<td style="text-align: right;">-5.13</td>
+<td style="text-align: right;">14.90</td>
+<td style="text-align: right;">1.15</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Kuwait</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">32520.95</td>
+<td style="text-align: right;">14812.92</td>
+<td style="text-align: right;">68673.33</td>
+<td style="text-align: right;">67.77</td>
+<td style="text-align: right;">2.57</td>
+<td style="text-align: right;">-41.01</td>
+<td style="text-align: right;">82.81</td>
+<td style="text-align: right;">4.36</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Kyrgyz Republic</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">951.73</td>
+<td style="text-align: right;">587.30</td>
+<td style="text-align: right;">1264.17</td>
+<td style="text-align: right;">67.79</td>
+<td style="text-align: right;">2.37</td>
+<td style="text-align: right;">-20.09</td>
+<td style="text-align: right;">13.20</td>
+<td style="text-align: right;">1.88</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Lao PDR</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">1334.76</td>
+<td style="text-align: right;">551.36</td>
+<td style="text-align: right;">2648.89</td>
+<td style="text-align: right;">60.80</td>
+<td style="text-align: right;">6.02</td>
+<td style="text-align: right;">-2.01</td>
+<td style="text-align: right;">14.19</td>
+<td style="text-align: right;">2.04</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Lebanon</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">6494.32</td>
+<td style="text-align: right;">2218.63</td>
+<td style="text-align: right;">8955.54</td>
+<td style="text-align: right;">41.00</td>
+<td style="text-align: right;">3.67</td>
+<td style="text-align: right;">-42.45</td>
+<td style="text-align: right;">49.45</td>
+<td style="text-align: right;">1.85</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Macao SAR, China</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">47262.88</td>
+<td style="text-align: right;">23023.34</td>
+<td style="text-align: right;">98998.26</td>
+<td style="text-align: right;">64.29</td>
+<td style="text-align: right;">6.35</td>
+<td style="text-align: right;">-54.34</td>
+<td style="text-align: right;">75.06</td>
+<td style="text-align: right;">2.17</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Malaysia</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">5290.28</td>
+<td style="text-align: right;">1266.32</td>
+<td style="text-align: right;">11429.59</td>
+<td style="text-align: right;">61.22</td>
+<td style="text-align: right;">6.09</td>
+<td style="text-align: right;">-7.36</td>
+<td style="text-align: right;">11.70</td>
+<td style="text-align: right;">2.36</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Maldives</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">5858.58</td>
+<td style="text-align: right;">1367.22</td>
+<td style="text-align: right;">11485.55</td>
+<td style="text-align: right;">52.84</td>
+<td style="text-align: right;">7.24</td>
+<td style="text-align: right;">-32.91</td>
+<td style="text-align: right;">37.51</td>
+<td style="text-align: right;">2.78</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Mongolia</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">2422.88</td>
+<td style="text-align: right;">1418.07</td>
+<td style="text-align: right;">4456.54</td>
+<td style="text-align: right;">56.14</td>
+<td style="text-align: right;">4.59</td>
+<td style="text-align: right;">-9.26</td>
+<td style="text-align: right;">17.29</td>
+<td style="text-align: right;">2.02</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Myanmar</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">437.93</td>
+<td style="text-align: right;">122.68</td>
+<td style="text-align: right;">1440.99</td>
+<td style="text-align: right;">64.10</td>
+<td style="text-align: right;">5.25</td>
+<td style="text-align: right;">-12.02</td>
+<td style="text-align: right;">13.84</td>
+<td style="text-align: right;">1.45</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Nepal</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">535.18</td>
+<td style="text-align: right;">323.26</td>
+<td style="text-align: right;">1136.09</td>
+<td style="text-align: right;">36.47</td>
+<td style="text-align: right;">3.79</td>
+<td style="text-align: right;">-2.98</td>
+<td style="text-align: right;">9.68</td>
+<td style="text-align: right;">1.71</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Oman</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">15220.98</td>
+<td style="text-align: right;">2340.35</td>
+<td style="text-align: right;">22819.20</td>
+<td style="text-align: right;">59.34</td>
+<td style="text-align: right;">7.77</td>
+<td style="text-align: right;">-14.25</td>
+<td style="text-align: right;">81.89</td>
+<td style="text-align: right;">3.58</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Pakistan</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">965.62</td>
+<td style="text-align: right;">413.96</td>
+<td style="text-align: right;">1642.28</td>
+<td style="text-align: right;">49.68</td>
+<td style="text-align: right;">4.99</td>
+<td style="text-align: right;">-1.27</td>
+<td style="text-align: right;">11.35</td>
+<td style="text-align: right;">2.68</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Philippines</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">1959.34</td>
+<td style="text-align: right;">1123.78</td>
+<td style="text-align: right;">3745.65</td>
+<td style="text-align: right;">58.85</td>
+<td style="text-align: right;">4.30</td>
+<td style="text-align: right;">-9.52</td>
+<td style="text-align: right;">8.78</td>
+<td style="text-align: right;">2.25</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Qatar</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">57217.57</td>
+<td style="text-align: right;">38185.15</td>
+<td style="text-align: right;">81608.57</td>
+<td style="text-align: right;">84.47</td>
+<td style="text-align: right;">6.02</td>
+<td style="text-align: right;">-7.31</td>
+<td style="text-align: right;">30.01</td>
+<td style="text-align: right;">6.83</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Saudi Arabia</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">28940.63</td>
+<td style="text-align: right;">15761.63</td>
+<td style="text-align: right;">58886.86</td>
+<td style="text-align: right;">50.69</td>
+<td style="text-align: right;">5.23</td>
+<td style="text-align: right;">-16.11</td>
+<td style="text-align: right;">52.59</td>
+<td style="text-align: right;">4.15</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Singapore</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">28401.73</td>
+<td style="text-align: right;">3611.95</td>
+<td style="text-align: right;">67948.89</td>
+<td style="text-align: right;">63.87</td>
+<td style="text-align: right;">6.94</td>
+<td style="text-align: right;">-3.87</td>
+<td style="text-align: right;">14.52</td>
+<td style="text-align: right;">2.03</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Sri Lanka</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">1929.20</td>
+<td style="text-align: right;">659.69</td>
+<td style="text-align: right;">4495.71</td>
+<td style="text-align: right;">49.93</td>
+<td style="text-align: right;">4.32</td>
+<td style="text-align: right;">-7.35</td>
+<td style="text-align: right;">8.67</td>
+<td style="text-align: right;">1.31</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Syrian Arab Republic</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">1001.79</td>
+<td style="text-align: right;">517.13</td>
+<td style="text-align: right;">1542.72</td>
+<td style="text-align: right;">39.53</td>
+<td style="text-align: right;">3.59</td>
+<td style="text-align: right;">-26.34</td>
+<td style="text-align: right;">25.80</td>
+<td style="text-align: right;">2.57</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Tajikistan</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">875.82</td>
+<td style="text-align: right;">369.93</td>
+<td style="text-align: right;">1491.07</td>
+<td style="text-align: right;">40.10</td>
+<td style="text-align: right;">2.65</td>
+<td style="text-align: right;">-29.00</td>
+<td style="text-align: right;">13.90</td>
+<td style="text-align: right;">2.53</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Thailand</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">3028.32</td>
+<td style="text-align: right;">592.47</td>
+<td style="text-align: right;">6434.54</td>
+<td style="text-align: right;">70.77</td>
+<td style="text-align: right;">5.55</td>
+<td style="text-align: right;">-7.63</td>
+<td style="text-align: right;">13.29</td>
+<td style="text-align: right;">1.56</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Timor-Leste</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">1113.26</td>
+<td style="text-align: right;">631.07</td>
+<td style="text-align: right;">2015.69</td>
+<td style="text-align: right;">66.54</td>
+<td style="text-align: right;">5.11</td>
+<td style="text-align: right;">-35.45</td>
+<td style="text-align: right;">58.08</td>
+<td style="text-align: right;">1.72</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Turkiye</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">6203.26</td>
+<td style="text-align: right;">2395.05</td>
+<td style="text-align: right;">14713.57</td>
+<td style="text-align: right;">46.09</td>
+<td style="text-align: right;">4.79</td>
+<td style="text-align: right;">-5.75</td>
+<td style="text-align: right;">11.44</td>
+<td style="text-align: right;">1.75</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Turkmenistan</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">3895.56</td>
+<td style="text-align: right;">1810.78</td>
+<td style="text-align: right;">7880.45</td>
+<td style="text-align: right;">47.65</td>
+<td style="text-align: right;">5.68</td>
+<td style="text-align: right;">-17.30</td>
+<td style="text-align: right;">35.38</td>
+<td style="text-align: right;">2.38</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">United Arab Emirates</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">65010.68</td>
+<td style="text-align: right;">40776.63</td>
+<td style="text-align: right;">117949.38</td>
+<td style="text-align: right;">74.81</td>
+<td style="text-align: right;">7.44</td>
+<td style="text-align: right;">-14.96</td>
+<td style="text-align: right;">76.62</td>
+<td style="text-align: right;">6.95</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Uzbekistan</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">2003.11</td>
+<td style="text-align: right;">1134.18</td>
+<td style="text-align: right;">3725.67</td>
+<td style="text-align: right;">55.06</td>
+<td style="text-align: right;">4.50</td>
+<td style="text-align: right;">-11.20</td>
+<td style="text-align: right;">9.47</td>
+<td style="text-align: right;">2.33</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Viet Nam</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">1701.59</td>
+<td style="text-align: right;">595.49</td>
+<td style="text-align: right;">3760.40</td>
+<td style="text-align: right;">74.41</td>
+<td style="text-align: right;">6.35</td>
+<td style="text-align: right;">2.55</td>
+<td style="text-align: right;">9.54</td>
+<td style="text-align: right;">1.79</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">West Bank and Gaza</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">2767.85</td>
+<td style="text-align: right;">1836.98</td>
+<td style="text-align: right;">3483.10</td>
+<td style="text-align: right;">33.12</td>
+<td style="text-align: right;">4.08</td>
+<td style="text-align: right;">-12.49</td>
+<td style="text-align: right;">21.92</td>
+<td style="text-align: right;">2.91</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Yemen, Rep.</td>
+<td style="text-align: right;">65</td>
+<td style="text-align: right;">1785.36</td>
+<td style="text-align: right;">859.21</td>
+<td style="text-align: right;">2356.20</td>
+<td style="text-align: right;">34.44</td>
+<td style="text-align: right;">1.86</td>
+<td style="text-align: right;">-27.99</td>
+<td style="text-align: right;">8.21</td>
+<td style="text-align: right;">3.12</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>The richest economy, United Arab Emirates, had an average GDP per capita of over $65,000, while countries like Afghanistan and Myanmar averaged under $500–$1000.</p>
+<p>Qatar and United Arab Emirates show exceptionally high average population growth rates of 6.8% and 7.0% respectively, far above the regional average.</p>
+<p>Vietnam and Cambodia, both lower-middle income countries, have among the highest employment-to-population ratios (around 74–80%), while high-income countries like Israel and Japan are around 57–59%.</p>
+</section>
 </section>
 <section id="data-analysis" class="level1">
 <h1>Data Analysis</h1>
+<section id="analysis-1-gdp-growth-volatility-vs-income-level" class="level2">
+<h2 class="anchored" data-anchor-id="analysis-1-gdp-growth-volatility-vs-income-level">Analysis 1: GDP-Growth Volatility vs Income Level</h2>
+<p>In this first analysis, we ask: <strong>Do higher-income East &amp; Southeast Asian countries exhibit less volatile GDP-growth?</strong></p>
+<div id="cell-gdp-income" class="cell" data-execution_count="2">
+<div class="cell-output cell-output-display">
+<div id="gdp-income" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="report_files/figure-html/gdp-income-output-1.png" class="img-fluid figure-img"></p>
+<figcaption>GDP Growth Volatility vs.&nbsp;Income Level</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div id="gdp-volatility-ols" class="cell" data-execution_count="3">
+<div class="cell-output cell-output-stdout">
+<pre><code>                              OLS Regression Results                             
+=================================================================================
+Dep. Variable:     volatility_gdp_growth   R-squared:                       0.002
+Model:                               OLS   Adj. R-squared:                 -0.123
+Method:                    Least Squares   F-statistic:                   0.01641
+Date:                   Mon, 28 Apr 2025   Prob (F-statistic):              0.901
+Time:                           21:19:25   Log-Likelihood:                -15.119
+No. Observations:                     10   AIC:                             34.24
+Df Residuals:                          8   BIC:                             34.84
+Df Model:                              1                                         
+Covariance Type:               nonrobust                                         
+===============================================================================
+                  coef    std err          t      P&gt;|t|      [0.025      0.975]
+-------------------------------------------------------------------------------
+const           3.8606      3.024      1.277      0.238      -3.113      10.835
+avg_log_gdp    -0.0440      0.344     -0.128      0.901      -0.836       0.748
+==============================================================================
+Omnibus:                        0.664   Durbin-Watson:                   1.764
+Prob(Omnibus):                  0.717   Jarque-Bera (JB):                0.012
+Skew:                           0.078   Prob(JB):                        0.994
+Kurtosis:                       2.939   Cond. No.                         69.5
+==============================================================================
+
+Notes:
+[1] Standard Errors assume that the covariance matrix of the errors is correctly specified.</code></pre>
+</div>
+</div>
+<div id="cell-gdp-volatility" class="cell" data-execution_count="4">
+<div class="cell-output cell-output-display">
+<div id="gdp-volatility" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="report_files/figure-html/gdp-volatility-output-1.png" class="img-fluid figure-img"></p>
+<figcaption>GDP Growth Volatility by Country</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<ol type="1">
+<li>Scatter Plot &amp; Regression Line</li>
+</ol>
+<ul>
+<li><p>The fitted line has a slight negative slope (β ≈ –0.044), suggesting that countries with higher average log GDP per capita tend to have marginally lower volatility in GDP growth.</p></li>
+<li><p>However, the shaded 95 % confidence band is very wide and nearly flat, indicating substantial uncertainty about that relationship.</p></li>
+</ul>
+<ol start="2" type="1">
+<li>OLS Regression Table</li>
+</ol>
+<ul>
+<li><p>Coefficient on avg_log_gdp: –0.044 (for each one-unit increase in log GDP per capita, volatility falls by about 0.044 pp)</p></li>
+<li><p>p-value: 0.901 — far above conventional significance levels (0.05), so we cannot reject the null hypothesis of zero slope.</p></li>
+<li><p>R²: 0.002 — only 0.2 % of the cross-country variation in GDP-growth volatility is explained by average income.</p></li>
+<li><p>Conclusion: There is no statistically significant evidence in this sample that richer East &amp; Southeast Asian countries experience more stable growth.</p></li>
+</ul>
+<ol start="3" type="1">
+<li>Bar Chart of Volatility by Country</li>
+</ol>
+<ul>
+<li>Most volatile: Mongolia (≈ 5.8 pp), followed by Singapore (≈ 4.1 pp) and Thailand (≈ 4.0 pp).</li>
+<li>Least volatile: Viet Nam (≈ 1.5 pp) and Japan (≈ 2.0 pp).</li>
+</ul>
+<p>These country-specific differences likely reflect diverse economic structures:</p>
+<ul>
+<li><p>Mongolia’s heavy reliance on mining exposes it to commodity price swings.</p></li>
+<li><p>Viet Nam and Japan have more diversified, stable economies and macro-prudential frameworks.</p></li>
+</ul>
+<p>Key Takeaway:</p>
+<p>In this group of ten East &amp; Southeast Asian economies (1990–2023), average income level is not a good predictor of growth volatility. Instead, country-specific factors—such as resource dependence, economic diversification, and policy frameworks—appear to drive differences in stability.</p>
+</section>
+<section id="analysis-2-population-growth-vs-gdp-growth" class="level2">
+<h2 class="anchored" data-anchor-id="analysis-2-population-growth-vs-gdp-growth">Analysis 2: Population Growth vs GDP Growth</h2>
+<p>Next, we explore: <strong>How has population growth influenced economic growth across emerging economies between different countries overtime?</strong></p>
+<div id="population-growth" class="cell" data-execution_count="6">
+<div id="population-growth-1" class="cell-output cell-output-display" data-execution_count="132">
+<pre><code>(array([1950., 1960., 1970., 1980., 1990., 2000., 2010., 2020., 2030.]),
+ [Text(1950.0, 0, '1950'),
+  Text(1960.0, 0, '1960'),
+  Text(1970.0, 0, '1970'),
+  Text(1980.0, 0, '1980'),
+  Text(1990.0, 0, '1990'),
+  Text(2000.0, 0, '2000'),
+  Text(2010.0, 0, '2010'),
+  Text(2020.0, 0, '2020'),
+  Text(2030.0, 0, '2030')])</code></pre>
+<p>Population Growth by Country</p>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="report_files/figure-html/population-growth-output-2.png" id="population-growth-2" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-gdp-growth" class="cell" data-execution_count="7">
+<div class="cell-output cell-output-display">
+<div id="gdp-growth" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="report_files/figure-html/gdp-growth-output-1.png" class="img-fluid figure-img"></p>
+<figcaption>GDP Growth by Country</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Population Growth Over Time:</p>
+<p>The population growth trends for each country are now color-coded, making it easier to compare them. The red line represents China, which shows a gradual decline in population growth. India (orange) have relatively higher population growth, though with a decline over time. Japan (green) and Korea, Rep.&nbsp;(blue) show a significant decrease in population growth, particularly in recent decades.</p>
+<p>GDP Growth Over Time:</p>
+<p>For GDP growth, each country is represented with a distinct color. China’s GDP growth (red) shows more volatility, with a noticeable spike in the early 1990s. India (orange) exhibit positive growth in several periods, while Japan (green) and Korea (blue) show more fluctuations with occasional negative growth.</p>
+<p>Overall, as countries exhibit grdual declines in population growth, it is important to note that GDP growth does not always correlate with population growth. For instance, China has experienced a decline in population growth but has maintained a relatively high GDP growth rate. Taiwan’s GDP growth has been more stable compared to the other countries, despite its population growth decline. In contrast, Japan and Korea have seen both population and GDP growth decline over time. Also, China’s dramatic increase population in 1960s caused a great jump in GDP growth.</p>
+</section>
+<section id="analysis-3-employment-rate-vs-gdp-growth" class="level2">
+<h2 class="anchored" data-anchor-id="analysis-3-employment-rate-vs-gdp-growth">Analysis 3: Employment Rate vs GDP Growth</h2>
+<p>Finally: <strong>How does employment rate affect GDP growth across different countries over time?</strong></p>
+<div id="7ae9a1ee" class="cell" data-execution_count="8">
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="report_files/figure-html/cell-9-output-1.png" class="img-fluid figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="cell-gdp-employment" class="cell" data-execution_count="9">
+<div class="cell-output cell-output-display">
+<div id="gdp-employment" class="quarto-figure quarto-figure-center anchored">
+<figure class="figure">
+<p><img src="report_files/figure-html/gdp-employment-output-1.png" class="img-fluid figure-img"></p>
+<figcaption>Correlation between Employment Rate and GDP Growth by Country</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<p>Correlation Analysis:</p>
+<p>The correlation analysis shows that the relationship between employment rates and GDP growth varies significantly across the selected Asian countries. Countries like China, the Philippines, Viet Nam, and Thailand demonstrate moderately strong positive correlations, suggesting that increases in employment rates are generally associated with higher economic growth. In contrast, countries such as Singapore, Malaysia, and Korea, Rep.&nbsp;display weak or even negative correlations, indicating that employment expansion does not necessarily lead to GDP growth in these cases. This variation highlights that while employment can contribute to growth, it is not the sole driver, and other factors like productivity, industrial structure, and external trade may have a larger influence in some countries.</p>
+<p>Time Series Trend Analysis:</p>
+<p>The time series plots further illustrate how the relationship between employment rates and GDP growth evolves over time within each country. In China, for example, GDP growth remained strong despite a steady decline in employment rates, suggesting that factors like industrial upgrading and capital investment played more critical roles. In contrast, countries like Viet Nam and Thailand show periods where employment and GDP growth move somewhat together, hinting at a closer link between labor market dynamics and economic performance. However, fluctuations in GDP growth for countries like Singapore and Japan appear largely disconnected from employment trends, indicating the influence of external shocks, demographic changes, or sectoral shifts beyond employment factors alone.</p>
+<p>Together, the correlation analysis and time series trends reveal that the connection between employment rates and GDP growth in Asian countries is complex and context-specific. While employment expansion can support economic growth, it is not universally predictive across all nations. Structural changes, technological innovation, global trade integration, and demographic factors often exert a stronger or overriding influence. Policymakers should therefore consider broader economic and social strategies, rather than relying solely on labor market policies, to drive sustainable long-term growth.</p>
+</section>
 </section>
 <section id="results-and-discussion" class="level1">
 <h1>Results and Discussion</h1>
+<p>Across our three analyses of ten East &amp; Southeast Asian economies (1990–2023), several insights emerge:</p>
+<ol type="1">
+<li><strong>Volatility vs.&nbsp;Income Level</strong></li>
+</ol>
+<ul>
+<li><p>We found no statistically significant link between a country’s average GDP per capita and its GDP-growth volatility (β≈–0.04, p=0.90, R²=0.002).</p></li>
+<li><p>Mongolia (≈ 5.8 pp) and Singapore (≈ 4.1 pp) exhibited the highest volatility, while Vietnam (≈ 1.5 pp) and Japan (≈ 2.0 pp) were the most stable.</p></li>
+<li><p>This suggests that structural factors—such as commodity dependence or financial sector depth—drive stability more than average income.</p></li>
+</ul>
+<ol start="2" type="1">
+<li><strong>Population Growth vs.&nbsp;GDP Growth</strong></li>
+</ol>
+<ul>
+<li><p>Moderate positive correlations vary by country.</p></li>
+<li><p>Countries with faster demographic expansion (Philippines, Indonesia) tend to have stronger co-movement of population &amp; GDP growth.</p></li>
+<li><p>Implies that a growing labor supply can support higher output — but the effect is not uniform across all economies.</p></li>
+</ul>
+<ol start="3" type="1">
+<li><strong>Employment-to-Population Ratio vs.&nbsp;GDP Growth</strong></li>
+</ol>
+<ul>
+<li><p>Small positive correlations across most countries (r≈0.10–0.25).</p></li>
+<li><p>Indicates that greater labor-market participation generally accompanies stronger growth, though the relationship is modest.</p></li>
+<li><p>Highlights that productivity, capital investment, and external shocks also play major roles beyond employment levels.</p></li>
+</ul>
+<p><strong>Synthesis</strong></p>
+<ul>
+<li><p>Income and volatility are largely uncoupled, meaning that raising income alone will not guarantee greater economic stability.</p></li>
+<li><p>Demographic and labor-market dynamics do play a role, but they explain only a partial share of overall growth performance.</p></li>
+<li><p><strong>Policy implication</strong>:<br>
+To promote both economic growth and stability, countries should pursue economic diversification, invest in human capital, and strengthen macroprudential frameworks—rather than relying solely on income growth or workforce expansion.</p></li>
+</ul>
 </section>
 <section id="conclusion" class="level1">
 <h1>Conclusion</h1>
+<p>This study has shown that:</p>
+<ul>
+<li><p>Higher income does not necessarily translate into lower GDP-growth volatility.</p></li>
+<li><p>Population growth can be a growth driver in rapidly expanding economies, but its impact varies across contexts.</p></li>
+<li><p>Employment ratios are positively linked to growth, yet other factors-such as productivity improvements and external conditions—are equally critical.</p></li>
+</ul>
+<p>Overall, sustainable development in Asia requires a holistic approach: combining income growth with structural reforms (diversification, human-capital investment, macroprudential policy) to achieve both robust growth and economic stability.</p>
 </section>
 <section id="further-reading" class="level1">
 <h1>Further Reading</h1>
+<p>To explore more about the data sources and tools used in this project, refer to the following resources:</p>
+<ul>
+<li><p><a href="https://data.worldbank.org">World Bank Open Data Portal</a></p></li>
+<li><p><a href="https://databank.worldbank.org/source/world-development-indicators">World Bank Indicator Reference (WDI)</a></p></li>
+<li><p><a href="https://datahelpdesk.worldbank.org/knowledgebase/articles/889392-about-the-indicators-api-documentation">World Bank API Documentation</a></p></li>
+<li><p><a href="https://github.com/OliverSherouse/wbdata"><code>wbdata</code> Python Library (GitHub)</a></p></li>
+<li><p><a href="https://data.worldbank.org/indicator/NY.GDP.PCAP.KD">GDP per Capita (constant 2015 US$) – Indicator Code: NY.GDP.PCAP.KD</a></p></li>
+<li><p><a href="https://data.worldbank.org/indicator/SL.EMP.TOTL.SP.ZS">Employment to Population Ratio (ages 15+, %) – Indicator Code: SL.EMP.TOTL.SP.ZS</a></p></li>
+<li><p><a href="https://data.worldbank.org/indicator/NY.GDP.MKTP.KD.ZG">GDP Growth (annual %) – Indicator Code: NY.GDP.MKTP.KD.ZG</a></p></li>
+<li><p><a href="https://data.worldbank.org/indicator/SP.POP.GROW">Population Growth (annual %) – Indicator Code: SP.POP.GROW</a></p></li>
+</ul>
 </section>
 
 </main>
